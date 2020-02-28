@@ -1,6 +1,6 @@
 import pymongo
 
-class Database:
+class Server:
     def __init__(self, database_name= "Ambivolt", url= 'mongodb+srv://straga:zeus16hades@maincluster-aybxn.mongodb.net/test?retryWrites=true&w=majority'):
 
         self.client = pymongo.MongoClient(url)
