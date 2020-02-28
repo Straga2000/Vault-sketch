@@ -1,96 +1,80 @@
 import pymongo
 
-class Server:
-    def __init__(self, database_name= "Ambivolt", url= 'mongodb+srv://straga:zeus16hades@maincluster-aybxn.mongodb.net/test?retryWrites=true&w=majority'):
+class Database:
+    def __init__(self,url, database_name= "Ambivolt"):
 
         self.client = pymongo.MongoClient(url)
+        print ("Initializam clientul")
+        self.database = None
+        self.databaseList = None
+        self.collectionList = None
+
+        self.refresh_database_list()
+
+        self.create_database(database_name)
+        self.refresh_collection_list()
+
+
+
+    def refresh_database_list(self):
         self.databaseList = self.client.list_database_names()
 
-        self.database =  None
-        self.create_database(database_name)
-
+    def refresh_collection_list(self):
         self.collectionList = self.database.list_collection_names()
-        self.collection = []
 
     def create_database(self, database_name):
         self.database = self.client[database_name]
         if database_name not in self.databaseList:
+            self.refresh_database_list()
             self.create_collection("dummy")
 
     def create_collection(self, name):
-        if name not in self.collectionList:
-            self.collection.append(self.database[name])
-            self.collection[0].insert_one({})
+        if self.collectionList is None or name not in self.collectionList:
+            self.refresh_collection_list()
+            self.database[name].insert_one({"type" : "dummmy"})
 
     def insert_one_in_collection(self, name, dict):
-        return self.database[name].insert_one(dict).inserted_id
+        return self.database[name].insert_one(dict)
 
     def insert_multiple_in_collection(self, name, list):
+        return self.database[name].insert_many(list)
 
-        for dict in list:
-            self.insert_one_in_collection(name, dict)
+    def delete_collection(self, name):
+        self.database[name].drop()
+        self.refresh_collection_list()
 
-#mycol = mydb["customers"] # creates new collection
-#mydict = { "name": "Bogdan", "address": "eu da eu" }
-#x = mycol.insert_one(mydict) # creates new entry
-#print(x.inserted_id)
+    def delete_insertion(self, name, dict):
+        self.database[name].delete_one(dict)
 
-mycol.delete_many({})# delete data grom collection
+    def delete_multiple_insertion(self, name, list):
+        self.database[name].delete_many(list)
 
-"""""
-mylist = [
-  { "name": "Amy", "address": "Apple st 652"},
-  { "name": "Hannah", "address": "Mountain 21"},
-  { "name": "Michael", "address": "Valley 345"},
-  { "name": "Sandy", "address": "Ocean blvd 2"},
-  { "name": "Betty", "address": "Green Grass 1"},
-  { "name": "Richard", "address": "Sky st 331"},
-  { "name": "Susan", "address": "One way 98"},
-  { "name": "Vicky", "address": "Yellow Garden 2"},
-  { "name": "Ben", "address": "Park Lane 38"},
-  { "name": "William", "address": "Central st 954"},
-  { "name": "Chuck", "address": "Main Road 989"},
-  { "name": "Viola", "address": "Sideway 1633"}
-]
-"""""
+    def print_collection(self, name):
+        for x in self.database[name].find():
+            print (x)
 
-""""
-{ "_id": 1, "name": "John", "address": "Highway 37"},
-  { "_id": 2, "name": "Peter", "address": "Lowstreet 27"},
-  { "_id": 3, "name": "Amy", "address": "Apple st 652"},
-  { "_id": 4, "name": "Hannah", "address": "Mountain 21"},
-  { "_id": 5, "name": "Michael", "address": "Valley 345"},
-  { "_id": 6, "name": "Sandy", "address": "Ocean blvd 2"},
-  { "_id": 7, "name": "Betty", "address": "Green Grass 1"},
-  { "_id": 8, "name": "Richard", "address": "Sky st 331"},
-  { "_id": 9, "name": "Susan", "address": "One way 98"},
-  { "_id": 10, "name": "Vicky", "address": "Yellow Garden 2"},
-  { "_id": 11, "name": "Ben", "address": "Park Lane 38"},
-  { "_id": 12, "name": "William", "address": "Central st 954"},
-  { "_id": 13, "name": "Chuck", "address": "Main Road 989"},
-  { "_id": 14, "name": "Viola", "address": "Sideway 1633"}
-"""
+    def query_many(self, name, query= None):
+        if query is None:
+            return self.database[name].find({"_id: 0"})
+        else:
+            return self.database[name].find({"_id : 0"}, query)
 
-#x = mycol.insert_many(mylist)
+    def query_one(self, name, query= None):
+        if query is None:
+            return self.database[name].find()
+        else:
+            return self.database[name].find({}, query)
 
-for x in mycol.find({},{ "_id": 0, "name": "John", "address": 1 }):
-  print(x)
+    def count(self, name, query= None):
+        if query is None:
+            return self.database[name].count_documents()
+        else:
+            return self.database[name].count_documents(query)
 
-# ids = x.inserted_ids
-#
-# print(id)
-#
-# dblist  = myclient.list_database_names()
-#
-# collist = mydb.list_collection_names()
-# for elem in collist:
-#   print(elem)
+db = Database('yes')
 
-#for elem in readCollection:
-#  print(elem)
+obj = {"age" : "12"}
 
-#for elem in dblist:
-#  print(elem)
-
-#if "mydatabase" in dblist:
-#  print("The database exists.")
+#db.insert_one_in_collection("dummy", obj)
+db.print_collection("dummy")
+#db.delete_collection("dummy")
