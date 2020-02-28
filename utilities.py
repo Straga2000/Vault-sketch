@@ -59,7 +59,7 @@ class User:
         elif mode == "encripted":
             return transform(string)
 
-    def set_password(self, string): #parola trebuie sa aiba maxim 20 de caractere
+    def set_password(self, string): # parola trebuie sa aiba maxim 20 de caractere
         self.password = string
 
     def get_info_data(self, string): # transmitere de form-data as string de forma string = "despartitor + mesaj"
